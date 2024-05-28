@@ -1,5 +1,5 @@
 Package: quadroot
-Title: Blank Title
+Title: Hopefully the future home of quadroot
 Version: 0.0.0
 Authors@R: 
     c(person(given = "Nathaniel",
