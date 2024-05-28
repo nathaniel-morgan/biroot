@@ -1,11 +1,11 @@
-#' ggclassify: Stats and Geoms for Classification with ggplot2
+#' quadroot: an implementation of an adaptive grid search method inspired by quadtree
 #'
 #' Description of package
 #'
 #' @seealso
 #'
 #' Useful links:
-#' * \url{https://github.com/nathaniel-morgan/ggclassify/}
+#' * \url{https://github.com/nathaniel-morgan/quadroot/}
 #'
 #' @import ggplot2
 #' @importFrom MASS lda qda
@@ -13,7 +13,7 @@
 #' @importFrom randomForest randomForest
 #' @importFrom smoothr smooth_ksmooth
 #' @docType package
-#' @name ggclassify
-#' @aliases ggclassify package-ggclassify
-#' @useDynLib ggclassify, .registration = TRUE
+#' @name quadroot
+#' @aliases quadroot package-quadroot
+#' @useDynLib quadroot, .registration = TRUE
 NULL
