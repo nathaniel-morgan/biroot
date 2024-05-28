@@ -3,16 +3,41 @@
 #'
 #' @section Arguments: `quadroot_discrete()` understands the following arguments:
 #'
-#'   - x - The region to be searched
+#'   - sq - corners of the region to be searched
+#'   - f - function for discrete classification over region
+#'   - max_depth - how many times should the grid be split in four
+#'   - min_depth - how many times should the grid split before becoming adaptive
+#'   - ... - additional arguments for f
+#'   
+#' @returns A dataframe with a row for each point with columns giving, location,
+#'  how deep in the grid search they were, a unique id for each square, 
+#'  and finally the result of the discrete function at that point.
 #'
 #' @name quadroot_discrete
 #'
 #'
 #' @examples
-#' # Basic test
+#' # using it to plot boundaries of qda
 #' 
 #' set.seed(17)
-#' 1+1
+#' df <- data.frame(x = rnorm(40), y=rnorm(40) + 2, class = factor("A")) |> 
+#'   rbind(data.frame(x = rnorm(40, sd=2) + 2, y=rnorm(40, sd = 2) - 1, class = factor("B"))) |> 
+#'   rbind(data.frame(x = rnorm(40, sd=1/2) + 2, y=rnorm(40, sd = 1/2) + 1,class = factor("C")))
+#' 
+#' names(df)[3] <- "fill"
+#' 
+#' disc_qda <- do.call(MASS::qda, args = list(fill~., data=df))
+#' 
+#' qda_square <- expand.grid(x=c(min(df$x),max(df$x)),
+#'                           y=c(min(df$y),max(df$y)))[c(1,3,4,2),]
+#' 
+#' qda_pred <- function(x, mod){
+#'   as.character(predict(mod,x)$class)
+#' }
+#' 
+#' df_test <- quadroot_discrete(sq = qda_square, f = qda_pred, mod = disc_qda, max_depth = 8)
+#' df_test |> ggplot(aes(x,y, fill = class , group = id, col = class))+
+#'   geom_polygon()
 #' 
 
 #' @rdname quadroot_discrete
