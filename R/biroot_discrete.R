@@ -1,7 +1,7 @@
 #' Find points on boundary of discrete classification
 #' 
 #'
-#' @section Arguments: `quadroot_discrete()` understands the following arguments:
+#' @section Arguments: `biroot_discrete()` understands the following arguments:
 #'
 #'   - sq - corners of the region to be searched
 #'   - f - function for discrete classification over region
@@ -13,7 +13,7 @@
 #'  how deep in the grid search they were, a unique id for each square, 
 #'  and finally the result of the discrete function at that point.
 #'
-#' @name quadroot_discrete
+#' @name biroot_discrete
 #'
 #'
 #' @examples
@@ -35,16 +35,16 @@
 #'   as.character(predict(mod,x)$class)
 #' }
 #' 
-#' df_test <- quadroot_discrete(sq = qda_square, f = qda_pred, mod = disc_qda, max_depth = 8)
+#' df_test <- biroot_discrete(sq = qda_square, f = qda_pred, mod = disc_qda, max_depth = 8)
 #' df_test |> ggplot(aes(x,y, fill = class , group = id, col = class))+
 #'   geom_polygon()
 #' 
 
-#' @rdname quadroot_discrete
+#' @rdname biroot_discrete
 #' @format NULL
 #' @usage NULL
 #' @export
-quadroot_discrete <- function(sq, f, max_depth = 5, min_depth = 2, ...) {
+biroot_discrete <- function(sq, f, max_depth = 5, min_depth = 2, ...) {
   sq$id <- 0
   sq$depth <- 0
   sq$class <- f(sq,...)
