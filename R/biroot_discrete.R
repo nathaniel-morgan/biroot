@@ -47,26 +47,31 @@
 biroot_discrete <- function(sq, f, max_depth = 5, min_depth = 2, ...) {
   sq$id <- 0
   sq$depth <- 0
-  sq$class <- f(sq,...)
+  f_old <- function(x) f(x, ...)
+  f_new <- memorize(f_old,2,1)
+  f_new <- f_old
+  sq$class <- f_new(sq)
+  print("a")
   process_quadpoint <- function(x, depth) {
     cbind(x, id = paste0(depth + 1, "-", runif(1)),
-          depth = depth + 1, class = f(x, ...))
+          depth = depth + 1, class = f_new(x))
   }
-  split_one <- function(sq, f, depth, max_depth, min_depth, ...) {
-    cls <- f(sq, ...)
+  print("b")
+  split_one <- function(sq, f, depth, max_depth, min_depth) {
+    cls <- f(sq)
     if (!all(cls == cls[1]) | depth <= min_depth) {
       return(rbind(sq, Reduce(rbind, lapply(quad_points(sq), process_quadpoint, depth = depth))))
     } else {
       return(sq)
     }
   }
-  
-  output <- split_one(sq = sq, f = f, depth = 0, max_depth = max_depth, min_depth = min_depth, ...)
-  
+  print("c")
+  output <- split_one(sq = sq, f = f_new, depth = 0, max_depth = max_depth, min_depth = min_depth)
+  print("d")
   for (i in 1:(max_depth-1)) {
     temp <- subset(output, output$depth == i)
     temp <- split.data.frame(temp, 0:(nrow(temp)-1) %/% 4)
-    output <- rbind(subset(output, output$depth != i), Reduce(rbind, lapply(temp, split_one, f = f, depth = i, max_depth = max_depth, min_depth = min_depth, ...)))
+    output <- rbind(subset(output, output$depth != i), Reduce(rbind, lapply(temp, split_one, f = f_new, depth = i, max_depth = max_depth, min_depth = min_depth)))
   }
   output
 }
@@ -80,4 +85,52 @@ quad_points <- function(df){
                   y=df$y+df$y[4])/2,
        data.frame(x=df$x+df$x[2],
                   y=df$y+df$y[2])/2)
+}
+
+match_row_in_matrix <- function(x, A, tol = sqrt(.Machine$double.eps)) {
+  if (nrow(A) == 0L) return( NA_integer_ )
+  for (i in 1:nrow(A)) {
+    if (all(abs(x - A[i,]) <= tol)) return(i)
+  }
+  NA_integer_
+}
+
+memorize <- function(f, n, m, simplify = TRUE) {
+  
+  x_log <- matrix(nrow = 0, ncol = n)
+  y_log <- matrix(nrow = 0, ncol = m)
+  
+  fm <- function(x) {
+    
+    input_was_vector <- is.vector(x)
+    if (input_was_vector) {
+      if (n == 1L) x <- t(t(x)) else x <- t(x)
+    }
+    
+    N <- nrow(x)
+    y <- matrix(nrow = N, ncol = m)
+    
+    # iterate
+    for (i in 1:N) {
+      mtch <- match_row_in_matrix(x[i,], x_log)
+      if (!is.na(mtch)) {                     # if value already computed, recall it
+        y[i,] <- y_log[mtch,]
+      } else {                                # if not on file, compute it and store
+        y[i,] <- f(x[i,])
+        x_log <<- rbind(x_log, x[i,])
+        y_log <<- rbind(y_log, y[i,])
+      }
+    }
+    
+    if (simplify && input_was_vector) {
+      if (n == 1L) return (y[,1])
+      if (N == 1L) return (y[1,])
+    }
+    
+    y
+    
+  }
+  
+  structure(fm, class = "memorized")
+  
 }
