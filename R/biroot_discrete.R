@@ -49,16 +49,20 @@ biroot_discrete <- function(sq, f, max_depth = 5, min_depth = 2, ...) {
   sq$depth <- 0
   f_old <- function(x) f(x, ...)
   f_new <- memorize(f_old,2,1)
-  f_new <- f_old
-  sq$class <- f_new(sq)
+  #remember(f_new,combined = TRUE)
+  #xy <- c("x","y")
+  #f_new <- f_old
+  sq$class <- NA
+  sq$class <- f_new(sq[,c("x","y")])
   print("a")
+  print(sq)
   process_quadpoint <- function(x, depth) {
     cbind(x, id = paste0(depth + 1, "-", runif(1)),
-          depth = depth + 1, class = f_new(x))
+          depth = depth + 1, class = f_new(x[,c("x","y")]))
   }
   print("b")
   split_one <- function(sq, f, depth, max_depth, min_depth) {
-    cls <- f(sq)
+    cls <- f(sq[,c("x","y")])
     if (!all(cls == cls[1]) | depth <= min_depth) {
       return(rbind(sq, Reduce(rbind, lapply(quad_points(sq), process_quadpoint, depth = depth))))
     } else {
@@ -127,10 +131,27 @@ memorize <- function(f, n, m, simplify = TRUE) {
       if (N == 1L) return (y[1,])
     }
     
-    y
+    c(y)
     
   }
   
   structure(fm, class = "memorized")
+  
+}
+
+remember <- function(f, combined = TRUE) {
+  
+  if (!inherits(f, "memorized")) stop("`remember()` only works for memorized functions, see ?remember.", call. = FALSE)
+  
+  x <- get("x_log", envir = environment(f))
+  y <- get("y_log", envir = environment(f))
+  
+  dfx <- as.data.frame(x)
+  names(dfx) <- if (ncol(dfx) == 1) "x" else paste0("x", seq_along(dfx))
+  
+  dfy <- as.data.frame(y)
+  names(dfy) <- if (ncol(dfy) == 1) "y" else paste0("y", seq_along(dfy))
+  
+  if (combined) cbind(dfx, dfy) else list("x" = dfx, "y" = dfy)
   
 }
