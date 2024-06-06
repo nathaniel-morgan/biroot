@@ -47,35 +47,33 @@
 biroot_discrete <- function(sq, f, max_depth = 5, min_depth = 2, ...) {
   sq$id <- 0
   sq$depth <- 0
-  f_old <- function(x) f(x, ...)
-  f_new <- memorize(f_old,2,1)
-  #remember(f_new,combined = TRUE)
-  #xy <- c("x","y")
-  #f_new <- f_old
+  f_new <- function(x) f(x, ...)
   sq$class <- NA
   sq$class <- f_new(sq[,c("x","y")])
-  print("a")
-  print(sq)
+  
   process_quadpoint <- function(x, depth) {
     cbind(x, id = paste0(depth + 1, "-", runif(1)),
           depth = depth + 1, class = f_new(x[,c("x","y")]))
   }
-  print("b")
+  
   split_one <- function(sq, f, depth, max_depth, min_depth) {
     cls <- f(sq[,c("x","y")])
     if (!all(cls == cls[1]) | depth <= min_depth) {
-      return(rbind(sq, Reduce(rbind, lapply(quad_points(sq), process_quadpoint, depth = depth))))
+      return(rbind(sq, do.call(rbind, lapply(quad_points(sq), process_quadpoint, depth = depth))))
     } else {
       return(sq)
     }
   }
-  print("c")
+  
   output <- split_one(sq = sq, f = f_new, depth = 0, max_depth = max_depth, min_depth = min_depth)
-  print("d")
+  
   for (i in 1:(max_depth-1)) {
     temp <- subset(output, output$depth == i)
     temp <- split.data.frame(temp, 0:(nrow(temp)-1) %/% 4)
-    output <- rbind(subset(output, output$depth != i), Reduce(rbind, lapply(temp, split_one, f = f_new, depth = i, max_depth = max_depth, min_depth = min_depth)))
+    output <- rbind(subset(output, output$depth != i),
+                    do.call(rbind, lapply(temp, split_one, f = f_new,
+                                          depth = i, max_depth = max_depth,
+                                          min_depth = min_depth)))
   }
   output
 }
