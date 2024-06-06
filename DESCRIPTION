@@ -23,14 +23,7 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.1
 Depends:
-    ggplot2
 Imports:
-    isoband,
-    vctrs,
-    tibble,
-    MASS,
-    stats,
-    scales
 LinkingTo: 
     cpp11
 URL: https://github.com/nathaniel-morgan/biroot/

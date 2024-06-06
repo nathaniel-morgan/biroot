@@ -79,14 +79,15 @@ biroot_discrete <- function(sq, f, max_depth = 5, min_depth = 2, ...) {
 }
 
 quad_points <- function(df){
-  list(data.frame(x=df$x+df$x[1],
-                  y=df$y+df$y[1])/2,
-       data.frame(x=df$x+df$x[3],
-                  y=df$y+df$y[3])/2,
-       data.frame(x=df$x+df$x[4],
-                  y=df$y+df$y[4])/2,
-       data.frame(x=df$x+df$x[2],
-                  y=df$y+df$y[2])/2)
+  with(df,
+       list(data.frame( "x" = x + x[1],
+                        "y" = y + y[1])/2,
+            data.frame( "x" = x + x[3],
+                        "y" = y + y[3])/2,
+            data.frame( "x" = x + x[4],
+                        "y" = y + y[4])/2,
+            data.frame( "x" = x + x[2],
+                        "y" = y + y[2])/2))
 }
 
 match_row_in_matrix <- function(x, A, tol = sqrt(.Machine$double.eps)) {
