@@ -34,14 +34,13 @@ names(df)[3] <- "fill"
 
 disc_qda <- do.call(MASS::qda, args = list(fill~., data=df))
 
-qda_square <- expand.grid(x=c(min(df$x),max(df$x)),
-                          y=c(min(df$y),max(df$y)))[c(1,3,4,2),]
-
 qda_pred <- function(x, mod){
   as.character(predict(mod,x)$class)
 }
 
-df_test <- biroot_discrete(sq = qda_square, f = qda_pred, mod = disc_qda, max_depth = 8)
+df_test <- biroot_discrete(f = qda_pred, xlim = c(min(df$x),max(df$x)),
+ylim = c(min(df$y),max(df$y)), mod = disc_qda, max_depth = 8)
+
 df_test |> ggplot(aes(x,y, fill = class , group = id, col = class))+
   geom_polygon()
 

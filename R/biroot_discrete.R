@@ -28,14 +28,13 @@
 #' 
 #' disc_qda <- do.call(MASS::qda, args = list(fill~., data=df))
 #' 
-#' qda_square <- expand.grid(x=c(min(df$x),max(df$x)),
-#'                           y=c(min(df$y),max(df$y)))[c(1,3,4,2),]
-#' 
 #' qda_pred <- function(x, mod){
 #'   as.character(predict(mod,x)$class)
 #' }
 #' 
-#' df_test <- biroot_discrete(sq = qda_square, f = qda_pred, mod = disc_qda, max_depth = 8)
+#' df_test <- biroot_discrete(f = qda_pred, xlim = c(min(df$x),max(df$x)),
+#' ylim = c(min(df$y),max(df$y)), mod = disc_qda, max_depth = 8)
+#' 
 #' df_test |> ggplot(aes(x,y, fill = class , group = id, col = class))+
 #'   geom_polygon()
 #' 
@@ -44,7 +43,9 @@
 #' @format NULL
 #' @usage NULL
 #' @export
-biroot_discrete <- function(sq, f, max_depth = 5, min_depth = 2, ...) {
+biroot_discrete <- function(f, xlim = c(-1,1), ylim = c(-1,1) ,max_depth = 10, min_depth = 2, ...) {
+  
+  sq <- expand.grid(x=xlim,y=ylim)[c(1,3,4,2),]
   sq$id <- 0
   sq$depth <- 0
   f_new <- function(x) f(x, ...)

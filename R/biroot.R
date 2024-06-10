@@ -18,21 +18,18 @@
 #'
 #' @examples
 #' 
-#' sq <- expand.grid(x = c(-5,5), y = c(-5,5))
 #' ftest <- function(x) x$x^2-x$y-2
 #' biroot(sq, ftest)
 #' biroot(sq, ftest) |> str()
 #' 
-#' biroot(sq, ftest) |> 
+#' biroot(ftest, xlim = c(-5,5), ylim = c(-5,5)) |> 
 #'   ggplot(aes(x, y)) +
 #'     geom_point(aes(fill = value), shape = 21) +
 #'     coord_equal()
 #'   
-#'   
-#' sq <- expand.grid(x = c(-2,2), y = c(-2,2))
 #' ftest <- function(v) with(v, x^2 + y^2 - 1)
 #' 
-#' (df <- biroot(sq, ftest, max_depth = 9) )
+#' (df <- biroot(ftest, xlim = c(-2,2), ylim = c(-2,2), max_depth = 9) )
 #' 
 #' df |> 
 #'   ggplot(aes(x, y)) +
@@ -59,8 +56,9 @@
 
 #' @rdname biroot
 #' @export
-biroot <- function(sq, f, max_depth = 10, min_depth = 2, ...) {
+biroot <- function(f, xlim = c(-1,1), ylim = c(-1,1) ,max_depth = 10, min_depth = 2, ...) {
   
+  sq <- expand.grid(x=xlim,y=ylim)[c(1,3,4,2),]
   sq$id <- 0
   sq$depth <- 0
   f_new <- function(x) f(x, ...)

@@ -3,6 +3,9 @@
 \name{biroot}
 \alias{biroot}
 \title{Find points on boundary of discrete classification}
+\usage{
+biroot(f, xlim = c(-1, 1), ylim = c(-1, 1), max_depth = 10, min_depth = 2, ...)
+}
 \value{
 A dataframe with a row for each point with columns giving, location,
 how deep in the grid search they were, a unique id for each square,
@@ -23,8 +26,38 @@ Find points on boundary of discrete classification
 }
 
 \examples{
-# using it to plot boundaries of qda
 
-set.seed(17)
-1+1
+ftest <- function(x) x$x^2-x$y-2
+biroot(sq, ftest)
+biroot(sq, ftest) |> str()
+
+biroot(ftest, xlim = c(-5,5), ylim = c(-5,5)) |> 
+  ggplot(aes(x, y)) +
+    geom_point(aes(fill = value), shape = 21) +
+    coord_equal()
+  
+ftest <- function(v) with(v, x^2 + y^2 - 1)
+
+(df <- biroot(ftest, xlim = c(-2,2), ylim = c(-2,2), max_depth = 9) )
+
+df |> 
+  ggplot(aes(x, y)) +
+    geom_point(aes(fill = value), shape = 21) +
+    geom_contour(
+      aes(z = z),
+      color = "red",
+      breaks = 0, 
+      data = expand.grid(
+        "x" = seq(-5, 5, length.out = 101), 
+        "y" = seq(-5, 5, length.out = 101)
+      ) |> 
+        transform("z" = x^2 + y^2 - 1)
+    ) +  
+    coord_equal()
+
+df |> 
+  ggplot(aes(x, y)) +
+    # geom_point( data = df |> filter(abs(value) >  .001), color = "black" ) +
+    geom_point( data = df |> filter(abs(value) <= .001), color = "firebrick1" ) +
+    coord_equal()
 }
