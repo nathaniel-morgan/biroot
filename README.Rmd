@@ -60,14 +60,12 @@ color_function <- function(x) {
   f <- colorRampPalette(c("gray85", "firebrick1", "gray85"))(10) |> 
     colorRamp()
   
-  threshold_to_interval <- function(x, l = -1, u = 1) {
-    l*(x <= l) + x*(l < x & x < u) + u*(x >= u)
-  }
+  threshold_to_interval <- function(x, l, u) l*(x <= l) + x*(l < x & x < u) + u*(x >= u)
   
   rescale <- function(x) (x - min(x)) / (max(x) - min(x))
   
   x |> 
-    threshold_to_interval() |> 
+    threshold_to_interval(l = -1, u = 1) |> 
     rescale() |> 
     f() |> 
     apply(1, \(v) rgb(v[1], v[2], v[3], maxColorValue = 255))
