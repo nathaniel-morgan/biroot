@@ -21,6 +21,7 @@
 #' sq <- expand.grid(x = c(-5,5), y = c(-5,5))
 #' ftest <- function(x) x$x^2-x$y-2
 #' biroot(sq, ftest)
+#' biroot(sq, ftest) |> str()
 #' 
 #' biroot(sq, ftest) |> 
 #'   ggplot(aes(x, y)) +
@@ -58,7 +59,7 @@
 
 #' @rdname biroot
 #' @export
-biroot <- function(sq, f, max_depth = 5, min_depth = 2, ...) {
+biroot <- function(sq, f, max_depth = 10, min_depth = 2, ...) {
   
   sq$id <- 0
   sq$depth <- 0
