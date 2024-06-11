@@ -108,3 +108,47 @@ quad_points <- function(df){
     )
   )
 }
+
+iso <- function(df){
+  value <- df$value
+  x <- df$x
+  y <- df$y
+  id <- df$id[1]
+  signs <- sign(df$value)
+  midx <- (x[1]+x[3])/2
+  midy <- (y[1]+y[2])/2
+  if(all(signs == c(1,1,1,1))) return(data.frame(x = NA,y = NA,id = id))
+  if(all(signs == c(-1,-1,-1,-1))) return(data.frame(x = NA,y = NA,id = id))
+  if(all(signs == c(-1,1,1,1))) return(
+    data.frame(x = c(midx,x[1]),y = c(y[1],midy),id = id))
+  if(all(signs == c(1,-1,1,1))) return(
+    data.frame(x = c(x[1],midx),y = c(midy,y[2]),id = id))
+  if(all(signs == c(1,1,-1,1))) return(
+    data.frame(x = c(midx,x[3]),y = c(y[2],midy),id = id))
+  if(all(signs == c(1,1,1,-1))) return(
+    data.frame(x = c(midx,x[3]),y = c(y[1],midy),id = id))
+  if(all(signs == c(-1,-1,1,1))) return(
+    data.frame(x = c(midx,midx),y = c(y[1],y[2]),id = id))
+  #Special Case
+  if(all(signs == c(-1,1,-1,1))) return(
+    data.frame(x = c(x[1],midx,midx,x[3]),y = c(midy,y[1],y[2],midy),
+    id = c(id,id,paste0(id,"-2"))))
+  if(all(signs == c(-1,1,1,-1))) return(
+    data.frame(x = c(x[1],x[3]),y = c(midy,midy),id = id))
+  if(all(signs == c(1,-1,-1,1))) return(
+    data.frame(x = c(x[1],x[3]),y = c(midy,midy),id = id))
+  #Special Case
+  if(all(signs == c(1,-1,1,-1))) return(
+    data.frame(x = c(x[1],midx,midx,x[3]),y = c(midy,y[2],y[1],midy),
+    id = c(id,id,paste0(id,"-2"))))
+  if(all(signs == c(1,1,-1,-1))) return(
+    data.frame(x = c(midx,midx),y = c(y[1],y[2]),id = id))
+  if(all(signs == c(-1,-1,-1,1))) return(
+    data.frame(x = c(midx,x[3]),y = c(y[1],midy),id = id))
+  if(all(signs == c(-1,-1,1,-1))) return(
+    data.frame(x = c(midx,x[3]),y = c(y[2],midy),id = id))
+  if(all(signs == c(-1,1,-1,-1))) return(
+    data.frame(x = c(x[1],midx),y = c(midy,y[2]),id = id))
+  if(all(signs == c(1,-1,-1,-1))) return(
+    data.frame(x = c(x[1],midx),y = c(midy,y[1]),id = id))
+}
