@@ -101,6 +101,8 @@ aproximation improves as a larger depth is used.
 
 ``` r
 library("ggplot2")
+theme_set(theme_minimal())
+theme_update(panel.grid.minor = element_blank())
 library("patchwork")
 
 heartf <- function(df) with(df,x^6 + 3*x^4*y^2 - 3*x^4 + 3*x^2*y^4 - 6*x^2*y^2 + 3*x^2 + y^6 - 3*y^4 + 3*y^2 - 1 - x^2*y^3)
@@ -110,6 +112,9 @@ biroot_lines(f = heartf, xlim = c(-1.5,1.5),
   ggplot(aes(x,y,group = id))+
   geom_line()+
   ggtitle("depth = 7")+
+    theme(axis.text.x = element_blank(), 
+    axis.ticks.x = element_blank(),
+    axis.title.x = element_blank())+
   coord_equal(xlim = c(-1.25,1.25), ylim = c(-1.15,1.35), expand = FALSE)+
 biroot_lines(f = heartf, xlim = c(-1.5,1.5),
          ylim = c(-1,1.5), max_depth = 8) |> 
@@ -118,16 +123,16 @@ biroot_lines(f = heartf, xlim = c(-1.5,1.5),
   ggtitle("depth = 8")+
   theme(axis.text.y = element_blank(), 
     axis.ticks.y = element_blank(),
-    axis.title.y = element_blank())+
+    axis.title.y = element_blank(),
+    axis.text.x = element_blank(), 
+    axis.ticks.x = element_blank(),
+    axis.title.x = element_blank())+
   coord_equal(xlim = c(-1.25,1.25), ylim = c(-1.15,1.35), expand = FALSE)+
 biroot_lines(f = heartf, xlim = c(-1.5,1.5),
          ylim = c(-1,1.5), max_depth = 9) |> 
   ggplot(aes(x,y,group = id))+
   geom_line()+
   ggtitle("depth = 9")+
-  theme(axis.text.y = element_blank(), 
-    axis.ticks.y = element_blank(),
-    axis.title.y = element_blank())+
   coord_equal(xlim = c(-1.25,1.25), ylim = c(-1.15,1.35), expand = FALSE)+
 biroot_lines(f = heartf, xlim = c(-1.5,1.5),
          ylim = c(-1,1.5), max_depth = 10) |> 
@@ -138,7 +143,7 @@ biroot_lines(f = heartf, xlim = c(-1.5,1.5),
     axis.ticks.y = element_blank(),
     axis.title.y = element_blank())+
   coord_equal(xlim = c(-1.25,1.25), ylim = c(-1.15,1.35), expand = FALSE)+
-  plot_layout(ncol = 4)
+  plot_layout(ncol = 2)
 ```
 
 <img src="man/figures/README-unnamed-chunk-4-1.png" width="100%" />
