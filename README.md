@@ -63,16 +63,15 @@ Here is an example of the basic use of these functions.
 ``` r
 library("biroot")
 
-sq <- expand.grid(x = c(-2,2), y = c(-2,2))
 ftest <- function(v) with(v, x^2 + y^2 - 1)
-df <- biroot(sq, ftest) 
+df <- biroot(ftest, xlim = c(-2,2), ylim = c(-2,2)) 
 str(df)
 #> 'data.frame':    33300 obs. of  5 variables:
-#>  $ x    : num  -2 2 -2 2 -2 0 -2 0 -2 0 ...
-#>  $ y    : num  -2 -2 2 2 -2 -2 0 0 0 0 ...
+#>  $ x    : num  -2 -2 2 2 -2 -2 0 0 0 0 ...
+#>  $ y    : num  -2 2 2 -2 -2 0 0 -2 0 2 ...
 #>  $ id   : chr  "0" "0" "0" "0" ...
 #>  $ depth: num  0 0 0 0 1 1 1 1 1 1 ...
-#>  $ value: num  7 7 7 7 7 3 3 -1 3 -1 ...
+#>  $ value: num  7 7 7 7 7 3 -1 3 -1 3 ...
 
 color_function <- function(x) {
   # f <- colorRampPalette(c("firebrick1", "gray85", "steelblue1"))(10) |> 
@@ -95,6 +94,40 @@ plot(x, y, bg = color_function(value), pch = 21, col = "gray25") |>
 ```
 
 <img src="man/figures/README-unnamed-chunk-3-1.png" width="100%" />
+
+The boundary argument can also be used to get an aproximation of the
+root contour using marching squares. Here’s an example of how the
+aproximation improves as a larger depth is used.
+
+``` r
+library("ggplot2")
+library("patchwork")
+
+heartf <- function(df) with(df,x^6 + 3*x^4*y^2 - 3*x^4 + 3*x^2*y^4 - 6*x^2*y^2 + 3*x^2 + y^6 - 3*y^4 + 3*y^2 - 1 - x^2*y^3)
+
+(biroot_lines(f = heartf, xlim = c(-1.5,1.5),
+       ylim = c(-1,1.5), max_depth = 7) |> 
+  ggplot(aes(x,y,group = id))+
+  geom_line()+
+  ggtitle("depth = 7")+
+biroot_lines(f = heartf, xlim = c(-1.5,1.5),
+         ylim = c(-1,1.5), max_depth = 8) |> 
+  ggplot(aes(x,y,group = id))+
+  geom_line()+
+    ggtitle("depth = 8"))/
+(biroot_lines(f = heartf, xlim = c(-1.5,1.5),
+         ylim = c(-1,1.5), max_depth = 9) |> 
+  ggplot(aes(x,y,group = id))+
+  geom_line()+
+  ggtitle("depth = 9")+
+biroot_lines(f = heartf, xlim = c(-1.5,1.5),
+         ylim = c(-1,1.5), max_depth = 10) |> 
+  ggplot(aes(x,y,group = id))+
+  geom_line()+
+  ggtitle("depth = 10"))
+```
+
+<img src="man/figures/README-unnamed-chunk-4-1.png" width="100%" />
 
 ## Installation
 

@@ -50,9 +50,8 @@ Here is an example of the basic use of these functions.
 ```{r, fig.height=6, fig.width=6, fig.dpi=300}
 library("biroot")
 
-sq <- expand.grid(x = c(-2,2), y = c(-2,2))
 ftest <- function(v) with(v, x^2 + y^2 - 1)
-df <- biroot(sq, ftest) 
+df <- biroot(ftest, xlim = c(-2,2), ylim = c(-2,2)) 
 str(df)
 
 color_function <- function(x) {
@@ -73,6 +72,38 @@ color_function <- function(x) {
 
 plot(x, y, bg = color_function(value), pch = 21, col = "gray25") |> 
   with(df, expr = _)
+```
+
+The boundary argument can also be used to get an aproximation of the root contour
+using marching squares. Here's an example of how the aproximation improves as
+a larger depth is used.
+
+```{r}
+library("ggplot2")
+library("patchwork")
+
+heartf <- function(df) with(df,x^6 + 3*x^4*y^2 - 3*x^4 + 3*x^2*y^4 - 6*x^2*y^2 + 3*x^2 + y^6 - 3*y^4 + 3*y^2 - 1 - x^2*y^3)
+
+(biroot_lines(f = heartf, xlim = c(-1.5,1.5),
+       ylim = c(-1,1.5), max_depth = 7) |> 
+  ggplot(aes(x,y,group = id))+
+  geom_line()+
+  ggtitle("depth = 7")+
+biroot_lines(f = heartf, xlim = c(-1.5,1.5),
+         ylim = c(-1,1.5), max_depth = 8) |> 
+  ggplot(aes(x,y,group = id))+
+  geom_line()+
+    ggtitle("depth = 8"))/
+(biroot_lines(f = heartf, xlim = c(-1.5,1.5),
+         ylim = c(-1,1.5), max_depth = 9) |> 
+  ggplot(aes(x,y,group = id))+
+  geom_line()+
+  ggtitle("depth = 9")+
+biroot_lines(f = heartf, xlim = c(-1.5,1.5),
+         ylim = c(-1,1.5), max_depth = 10) |> 
+  ggplot(aes(x,y,group = id))+
+  geom_line()+
+  ggtitle("depth = 10"))
 ```
 
 

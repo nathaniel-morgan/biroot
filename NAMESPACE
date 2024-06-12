@@ -2,3 +2,4 @@
 
 export(biroot)
 export(biroot_discrete)
+export(biroot_lines)

@@ -3,8 +3,9 @@
 #'
 #' @section Arguments: `biroot()` understands the following arguments:
 #'
-#'   - sq - corners of the region to be searched
 #'   - f - function for discrete classification over region
+#'   - xlim - boundaries of x to be searched
+#'   - ylim - boundaries of y to be searched
 #'   - max_depth - how many times should the grid be split in four
 #'   - min_depth - how many times should the grid split before becoming adaptive
 #'   - ... - additional arguments for f
@@ -46,11 +47,6 @@
 #'     ) +  
 #'     coord_equal()
 #' 
-#' df |> 
-#'   ggplot(aes(x, y)) +
-#'     # geom_point( data = df |> filter(abs(value) >  .001), color = "black" ) +
-#'     geom_point( data = df |> filter(abs(value) <= .001), color = "firebrick1" ) +
-#'     coord_equal()
     
 
 
@@ -107,48 +103,4 @@ quad_points <- function(df){
       data.frame( "x" = x + x[2], "y" = y + y[2] ) / 2
     )
   )
-}
-
-iso <- function(df){
-  value <- df$value
-  x <- df$x
-  y <- df$y
-  id <- df$id[1]
-  signs <- sign(df$value)
-  midx <- (x[1]+x[3])/2
-  midy <- (y[1]+y[2])/2
-  if(all(signs == c(1,1,1,1))) return(data.frame(x = NA,y = NA,id = id))
-  if(all(signs == c(-1,-1,-1,-1))) return(data.frame(x = NA,y = NA,id = id))
-  if(all(signs == c(-1,1,1,1))) return(
-    data.frame(x = c(midx,x[1]),y = c(y[1],midy),id = id))
-  if(all(signs == c(1,-1,1,1))) return(
-    data.frame(x = c(x[1],midx),y = c(midy,y[2]),id = id))
-  if(all(signs == c(1,1,-1,1))) return(
-    data.frame(x = c(midx,x[3]),y = c(y[2],midy),id = id))
-  if(all(signs == c(1,1,1,-1))) return(
-    data.frame(x = c(midx,x[3]),y = c(y[1],midy),id = id))
-  if(all(signs == c(-1,-1,1,1))) return(
-    data.frame(x = c(midx,midx),y = c(y[1],y[2]),id = id))
-  #Special Case
-  if(all(signs == c(-1,1,-1,1))) return(
-    data.frame(x = c(x[1],midx,midx,x[3]),y = c(midy,y[1],y[2],midy),
-    id = c(id,id,paste0(id,"-2"))))
-  if(all(signs == c(-1,1,1,-1))) return(
-    data.frame(x = c(x[1],x[3]),y = c(midy,midy),id = id))
-  if(all(signs == c(1,-1,-1,1))) return(
-    data.frame(x = c(x[1],x[3]),y = c(midy,midy),id = id))
-  #Special Case
-  if(all(signs == c(1,-1,1,-1))) return(
-    data.frame(x = c(x[1],midx,midx,x[3]),y = c(midy,y[2],y[1],midy),
-    id = c(id,id,paste0(id,"-2"))))
-  if(all(signs == c(1,1,-1,-1))) return(
-    data.frame(x = c(midx,midx),y = c(y[1],y[2]),id = id))
-  if(all(signs == c(-1,-1,-1,1))) return(
-    data.frame(x = c(midx,x[3]),y = c(y[1],midy),id = id))
-  if(all(signs == c(-1,-1,1,-1))) return(
-    data.frame(x = c(midx,x[3]),y = c(y[2],midy),id = id))
-  if(all(signs == c(-1,1,-1,-1))) return(
-    data.frame(x = c(x[1],midx),y = c(midy,y[2]),id = id))
-  if(all(signs == c(1,-1,-1,-1))) return(
-    data.frame(x = c(x[1],midx),y = c(midy,y[1]),id = id))
 }
