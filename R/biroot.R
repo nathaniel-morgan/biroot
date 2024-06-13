@@ -73,7 +73,7 @@ biroot <- function(f, xlim = c(-1,1), ylim = c(-1,1) ,max_depth = 10, min_depth 
   split_one <- function(sq, f, depth) {
     cls <- f(sq[,c("x","y")])
     if ( all(sign(cls) == sign(cls[1])) && depth > min_depth ) return(sq)
-    rbind(sq, do.call(rbind, lapply(quad_points(sq), process_quadpoint, depth = depth)))
+    rbind(sq, do.call(rbind, lapply(quad_point_c(sq), process_quadpoint, depth = depth)))
   }
   
   output <- split_one(sq = sq, f = f_new, depth = 0)

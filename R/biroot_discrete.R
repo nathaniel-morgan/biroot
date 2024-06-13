@@ -60,7 +60,7 @@ biroot_discrete <- function(f, xlim = c(-1,1), ylim = c(-1,1) ,max_depth = 10, m
   split_one <- function(sq, f, depth, max_depth, min_depth) {
     cls <- f(sq[,c("x","y")])
     if (!all(cls == cls[1]) | depth <= min_depth) {
-      return(rbind(sq, do.call(rbind, lapply(quad_points(sq), process_quadpoint, depth = depth))))
+      return(rbind(sq, do.call(rbind, lapply(quad_point_c(sq), process_quadpoint, depth = depth))))
     } else {
       return(sq)
     }
