@@ -63,20 +63,18 @@ Here is an example of the basic use of these functions.
 ``` r
 library("biroot")
 
-ftest <- function(v) with(v, x^2 + y^2 - 1)
-df <- biroot(ftest, xlim = c(-2,2), ylim = c(-2,2)) 
+f <- function(v) with(v, x^2 + y^2 - 1)
+df <- biroot(f, xlim = c(-2,2), ylim = c(-2,2)) 
 str(df)
 #> 'data.frame':    33300 obs. of  5 variables:
 #>  $ x    : num  -2 -2 2 2 -2 -2 0 0 0 0 ...
-#>  $ y    : num  -2 2 2 -2 -2 0 0 -2 0 2 ...
+#>  $ y    : num  -2 2 2 -2 0 2 2 0 0 2 ...
 #>  $ id   : chr  "0" "0" "0" "0" ...
 #>  $ depth: num  0 0 0 0 1 1 1 1 1 1 ...
-#>  $ value: num  7 7 7 7 7 3 -1 3 -1 3 ...
+#>  $ value: num  7 7 7 7 3 7 3 -1 -1 3 ...
 
 color_function <- function(x) {
-  # f <- colorRampPalette(c("firebrick1", "gray85", "steelblue1"))(10) |> 
-  f <- colorRampPalette(c("gray85", "firebrick1", "gray85"))(10) |> 
-    colorRamp()
+  f <- colorRampPalette(c("gray85", "firebrick1", "gray85"))(10) |> colorRamp()
   
   threshold_to_interval <- function(x, l, u) l*(x <= l) + x*(l < x & x < u) + u*(x >= u)
   
@@ -95,58 +93,80 @@ plot(x, y, bg = color_function(value), pch = 21, col = "gray25") |>
 
 <img src="man/figures/README-unnamed-chunk-3-1.png" width="100%" />
 
-The boundary argument can also be used to get an aproximation of the
+## `biroot_lines()`
+
+The boundary argument can also be used to get an approximation of the
 root contour using marching squares. Here’s an example of how the
-aproximation improves as a larger depth is used.
+approximation improves as a larger depth is used.
 
 ``` r
-library("ggplot2")
-theme_set(theme_minimal())
+library("ggplot2"); theme_set(theme_minimal())
 theme_update(panel.grid.minor = element_blank())
 library("patchwork")
 
-heartf <- function(df) with(df,x^6 + 3*x^4*y^2 - 3*x^4 + 3*x^2*y^4 - 6*x^2*y^2 + 3*x^2 + y^6 - 3*y^4 + 3*y^2 - 1 - x^2*y^3)
+plot_contour_at_depth <- function(depth, xlim = c(-2, 2), ylim = c(-2, 2), min_depth = 2) {
+  if (length(depth) > 1) 
+      return(
+        depth |> 
+          lapply(plot_contour_at_depth, xlim, ylim, min_depth) |> 
+          Reduce(`+`, x = _)
+      )
+  
+  biroot_lines(f, xlim, ylim, max_depth = depth, min_depth = min_depth) |> 
+    ggplot(aes(x, y, group = id)) +
+      geom_point(
+        aes(x, y), size = .1, color = "gray65", inherit.aes = FALSE, 
+        data = biroot(f, xlim, ylim, depth, min_depth = min_depth)
+      ) +
+      geom_line(color = "firebrick1") +
+      theme(
+        axis.title = element_blank(), axis.text = element_blank(), 
+        panel.grid = element_blank(), panel.background = element_rect(color = "gray65")
+      ) +
+      coord_equal(xlim = xlim, ylim = ylim)
+}
 
-biroot_lines(f = heartf, xlim = c(-1.5,1.5),
-       ylim = c(-1,1.5), max_depth = 7) |> 
-  ggplot(aes(x,y,group = id))+
-  geom_line()+
-  ggtitle("depth = 7")+
-    theme(axis.text.x = element_blank(), 
-    axis.ticks.x = element_blank(),
-    axis.title.x = element_blank())+
-  coord_equal(xlim = c(-1.25,1.25), ylim = c(-1.15,1.35), expand = FALSE)+
-biroot_lines(f = heartf, xlim = c(-1.5,1.5),
-         ylim = c(-1,1.5), max_depth = 8) |> 
-  ggplot(aes(x,y,group = id))+
-  geom_line()+
-  ggtitle("depth = 8")+
-  theme(axis.text.y = element_blank(), 
-    axis.ticks.y = element_blank(),
-    axis.title.y = element_blank(),
-    axis.text.x = element_blank(), 
-    axis.ticks.x = element_blank(),
-    axis.title.x = element_blank())+
-  coord_equal(xlim = c(-1.25,1.25), ylim = c(-1.15,1.35), expand = FALSE)+
-biroot_lines(f = heartf, xlim = c(-1.5,1.5),
-         ylim = c(-1,1.5), max_depth = 9) |> 
-  ggplot(aes(x,y,group = id))+
-  geom_line()+
-  ggtitle("depth = 9")+
-  coord_equal(xlim = c(-1.25,1.25), ylim = c(-1.15,1.35), expand = FALSE)+
-biroot_lines(f = heartf, xlim = c(-1.5,1.5),
-         ylim = c(-1,1.5), max_depth = 10) |> 
-  ggplot(aes(x,y,group = id))+
-  geom_line()+
-  ggtitle("depth = 10")+
-  theme(axis.text.y = element_blank(), 
-    axis.ticks.y = element_blank(),
-    axis.title.y = element_blank())+
-  coord_equal(xlim = c(-1.25,1.25), ylim = c(-1.15,1.35), expand = FALSE)+
-  plot_layout(ncol = 2)
+p <- mpoly::mp("(x^2 + y^2 - 1)^3 - x^2 y^3")
+pf <- as.function(p, silent = TRUE)
+f <- function(df) with(df, cbind(x, y) |> pf())
+plot_contour_at_depth(1:9, min_depth = 0)
 ```
 
 <img src="man/figures/README-unnamed-chunk-4-1.png" width="100%" />
+
+Note that if the level set is complex, the relationship between
+`min_depth` and `max_depth` is very significant at “getting” the level
+set.
+
+``` r
+(p <- mpoly::lissajous(7, 7,  0, 0))
+#> 49 x^2  -  784 x^4  +  4704 x^6  -  13440 x^8  +  19712 x^10  -  14336 x^12  +  4096 x^14  +  49 y^2  -  784 y^4  +  4704 y^6  -  13440 y^8  +  19712 y^10  -  14336 y^12  +  4096 y^14  -  1
+pf <- as.function(p, silent = TRUE)
+f <- function(df) with(df, cbind(x, y) |> pf())
+plot_contour_at_depth(3:6, xlim = c(-1.1, 1.1), ylim = c(-1.1, 1.1))
+```
+
+<img src="man/figures/README-unnamed-chunk-5-1.png" width="100%" />
+
+``` r
+
+
+plot_contour_at_depth(8, xlim = c(-1.1, 1.1), ylim = c(-1.1, 1.1))
+```
+
+<img src="man/figures/README-unnamed-chunk-5-2.png" width="100%" />
+
+``` r
+plot_contour_at_depth(8, xlim = c(-1.1, 1.1), ylim = c(-1.1, 1.1), min_depth = 4)
+```
+
+<img src="man/figures/README-unnamed-chunk-5-3.png" width="100%" />
+
+``` r
+plot_contour_at_depth(8, xlim = c(-1.1, 1.1), ylim = c(-1.1, 1.1), min_depth = 5)
+```
+
+<img src="man/figures/README-unnamed-chunk-5-4.png" width="100%" />
 
 ## Installation
 
