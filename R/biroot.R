@@ -58,7 +58,6 @@ biroot <- function(f, xlim = c(-1,1), ylim = c(-1,1) ,max_depth = 10, min_depth 
   sq$id <- 0
   sq$depth <- 0
   f_new <- function(x) f(x, ...)
-  sq$value <- NA
   sq$value <- f_new(sq[,c("x","y")])
   
   process_quadpoint <- function(df, depth) {
@@ -71,8 +70,7 @@ biroot <- function(f, xlim = c(-1,1), ylim = c(-1,1) ,max_depth = 10, min_depth 
   }
   
   split_one <- function(sq, f, depth) {
-    cls <- f(sq[,c("x","y")])
-    if ( all(sign(cls) == sign(cls[1])) && depth > min_depth ) return(sq)
+    if ( all(sign(sq$value) == sign(sq$value[1])) & depth > min_depth ) return(sq)
     rbind(sq, do.call(rbind, lapply(quad_point_c(sq), process_quadpoint, depth = depth)))
   }
   

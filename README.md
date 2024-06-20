@@ -95,12 +95,17 @@ plot(x, y, bg = color_function(value), pch = 21, col = "gray25") |>
 
 ## `biroot_lines()`
 
-The boundary argument can also be used to get an approximation of the
-root contour using marching squares. Here’s an example of how the
-approximation improves as a larger depth is used.
+`biroot_lines()` takes the same arguments as `biroot()`, but instead of
+returning the points found by biroot, it takes them and runs marching
+squares on each square individually and returns a dataframe with a pair
+of points defining a line using the basic 15 case algorithm described in
+`https://en.wikipedia.org/wiki/Marching_squares`. Each line has a unique
+id inherited from the square it crosses. Any squares that don’t have a
+line due to being all negative or positive are filtered out.
 
 ``` r
 library("ggplot2"); theme_set(theme_minimal())
+#> Warning: package 'ggplot2' was built under R version 4.3.2
 theme_update(panel.grid.minor = element_blank())
 library("patchwork")
 
