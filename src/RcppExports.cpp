@@ -10,6 +10,17 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
+// iso_c
+DataFrame iso_c(DataFrame df);
+RcppExport SEXP _biroot_iso_c(SEXP dfSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< DataFrame >::type df(dfSEXP);
+    rcpp_result_gen = Rcpp::wrap(iso_c(df));
+    return rcpp_result_gen;
+END_RCPP
+}
 // quad_point_c
 List quad_point_c(DataFrame df);
 RcppExport SEXP _biroot_quad_point_c(SEXP dfSEXP) {
@@ -23,6 +34,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_biroot_iso_c", (DL_FUNC) &_biroot_iso_c, 1},
     {"_biroot_quad_point_c", (DL_FUNC) &_biroot_quad_point_c, 1},
     {NULL, NULL, 0}
 };
