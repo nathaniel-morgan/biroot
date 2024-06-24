@@ -92,20 +92,22 @@ plot_contour_at_depth <- function(depth, xlim = c(-2, 2), ylim = c(-2, 2), min_d
       return(
         depth |> 
           lapply(plot_contour_at_depth, xlim, ylim, min_depth) |> 
-          Reduce(`+`, x = _)
+          Reduce(`+`, x = _) + 
+          patchwork::plot_layout(guides = "collect")
       )
   
   biroot_lines(f, xlim, ylim, max_depth = depth, min_depth = min_depth) |> 
     ggplot(aes(x, y, group = id)) +
+      geom_line(color = "black") +
       geom_point(
-        aes(x, y), size = .1, color = "gray65", inherit.aes = FALSE, 
+        aes(x, y, color = factor(sign(value))), size = .1, inherit.aes = FALSE, 
         data = biroot(f, xlim, ylim, depth, min_depth = min_depth)
       ) +
-      geom_line(color = "firebrick1") +
       theme(
         axis.title = element_blank(), axis.text = element_blank(), 
         panel.grid = element_blank(), panel.background = element_rect(color = "gray65")
       ) +
+      labs(color = "sign(f(x,y))") +
       coord_equal(xlim = xlim, ylim = ylim)
 }
 
