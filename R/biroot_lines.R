@@ -1,5 +1,5 @@
-#' Find points on boundary of zero set of function
-#' 
+#' Return lines approximating the solution set of the function given
+#' within the region given.
 #'
 #' @section Arguments: `biroot_lines()` understands the following arguments:
 #'
@@ -18,48 +18,20 @@
 #'
 #' @examples
 #' 
-#' ftest <- function(x) x$x^2-x$y-2
-#' biroot(sq, ftest)
-#' biroot(sq, ftest) |> str()
+#' ftest <- function(x) with(x, x^2+y^2-1)
+#' solution_lines <- biroot_lines(ftest, xlim = c(-2,2), ylim = c(-2,2))
+#' solution_lines |> str()
 #' 
-#' biroot(ftest, xlim = c(-5,5), ylim = c(-5,5)) |> 
-#'   ggplot(aes(x, y)) +
-#'     geom_point(aes(fill = value), shape = 21) +
+#' solution_lines |> 
+#'   ggplot(aes(x, y, group = id)) +
+#'     geom_line() +
 #'     coord_equal()
 #'   
-#' ftest <- function(v) with(v, x^2 + y^2 - 1)
-#' 
-#' (df <- biroot(ftest, xlim = c(-2,2), ylim = c(-2,2), max_depth = 9) )
-#' 
-#' df |> 
-#'   ggplot(aes(x, y)) +
-#'     geom_point(aes(fill = value), shape = 21) +
-#'     geom_contour(
-#'       aes(z = z),
-#'       color = "red",
-#'       breaks = 0, 
-#'       data = expand.grid(
-#'         "x" = seq(-5, 5, length.out = 101), 
-#'         "y" = seq(-5, 5, length.out = 101)
-#'       ) |> 
-#'         transform("z" = x^2 + y^2 - 1)
-#'     ) +  
-#'     coord_equal()
-#' 
-#' df |> 
-#'   ggplot(aes(x, y)) +
-#'     # geom_point( data = df |> filter(abs(value) >  .001), color = "black" ) +
-#'     geom_point( data = df |> filter(abs(value) <= .001), color = "firebrick1" ) +
-#'     coord_equal()
-#'     
-#'  biroot(f = heartf, xlim = c(-1.5,1.5),
-#'         ylim = c(-1,1.5), max_depth = 8, boundary = TRUE) |> 
-#'  ggplot(aes(x, y, group = id))+
-#'     geom_line()
+
     
 
 
-#' @rdname biroot
+#' @rdname biroot_lines
 #' @export
 biroot_lines <- function(f, xlim = c(-1,1), ylim = c(-1,1) ,max_depth = 10, min_depth = 2, ...) {
     final <- subset(biroot(f = f, xlim = xlim, ylim = ylim, 

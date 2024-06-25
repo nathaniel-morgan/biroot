@@ -19,9 +19,9 @@
 #'
 #' @examples
 #' 
-#' ftest <- function(x) x$x^2-x$y-2
-#' biroot(sq, ftest)
-#' biroot(sq, ftest) |> str()
+#' ftest <- function(x) with(x, x^2-y-2)
+#' biroot(ftest, xlim = c(-5,5), ylim = c(-5,5))
+#' biroot(ftest, xlim = c(-5,5), ylim = c(-5,5)) |> str()
 #' 
 #' biroot(ftest, xlim = c(-5,5), ylim = c(-5,5)) |> 
 #'   ggplot(aes(x, y)) +

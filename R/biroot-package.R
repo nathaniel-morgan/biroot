@@ -1,4 +1,4 @@
-#' ggclassify: Stats and Geoms for Classification with ggplot2
+#' biroot: quadtree inspired method for approximating solution curves.
 #'
 #' Description of package
 #'
@@ -8,8 +8,7 @@
 #' * \url{https://github.com/nathaniel-morgan/biroot/}
 #'
 #' @import Rcpp
-#' @docType _PACKAGE
 #' @name biroot
 #' @aliases biroot package-biroot
 #' @useDynLib biroot, .registration = TRUE
-NULL
+"_PACKAGE"
