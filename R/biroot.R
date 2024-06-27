@@ -68,7 +68,7 @@ biroot <- function(f, xlim = c(-1,1), ylim = c(-1,1) ,max_depth = 10, min_depth 
       df, # data frame with columns x and y
       "id" = rep(paste0(depth + 1, "-", runif(4)),each = 4),
       "depth" = depth + 1, 
-      "value" = f_new(df[,c("x","y")]),
+      "value" = biroot_assign(df = df, sq = sq, f = f_new),
       "parent" = sq$id,
       "position" = rep(c("bl", "tl", "tr", "br"),4)
     )
@@ -106,4 +106,16 @@ quad_points <- function(df){
       data.frame( "x" = x + x[2], "y" = y + y[2] ) / 2
     )
   )
+}
+
+biroot_assign <- function(df,sq,f){
+  ml <- f(df[14,c("x","y")])
+  mm <- f(df[15,c("x","y")])
+  bm <- f(df[16,c("x","y")])
+  tm <- f(df[3,c("x","y")])
+  mr <- f(df[8,c("x","y")])
+  c(ml, sq$value[2], tm, mm,
+    mm, tm, sq$value[3], mr,
+    bm, mm, mr, sq$value[4],
+    sq$value[1], ml, mm, bm)
 }
