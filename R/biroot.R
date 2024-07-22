@@ -55,23 +55,28 @@
 biroot <- function(f, xlim = c(-1,1), ylim = c(-1,1) ,max_depth = 10, min_depth = 2, ...) {
   
   sq <- expand.grid(x=xlim,y=ylim)[c(1,3,4,2),]
-  sq$id <- 0
+  sq$id <- 1
   sq$depth <- 0
   f_new <- function(x) f(x, ...)
   sq$value <- f_new(sq[,c("x","y")])
+  sq$parent <- 0
+  sq$parent_position <- "all"
+  sq$position <- c("bl", "tl", "tr", "br")
   
-  process_quadpoint <- function(df, depth) {
+  process_quadpoint <- function(df, depth, sq) {
     cbind(
       df, # data frame with columns x and y
-      "id" = paste0(depth + 1, "-", runif(1)),
+      "id" = rep(paste0(depth + 1, "-", runif(4)),each = 4),
       "depth" = depth + 1, 
-      "value" = f_new(df[,c("x","y")])
+      "value" = biroot_assign(df = df, sq = sq, f = f_new),
+      "parent" = sq$id,
+      "position" = rep(c("bl", "tl", "tr", "br"),4)
     )
   }
   
   split_one <- function(sq, f, depth) {
     if ( all(sign(sq$value) == sign(sq$value[1])) & depth > min_depth ) return(sq)
-    rbind(sq, do.call(rbind, lapply(quad_point_c(sq), process_quadpoint, depth = depth)))
+    rbind(sq, process_quadpoint(do.call(rbind, quad_point_c(sq)),depth = depth, sq = sq))
   }
   
   output <- split_one(sq = sq, f = f_new, depth = 0)
@@ -101,4 +106,16 @@ quad_points <- function(df){
       data.frame( "x" = x + x[2], "y" = y + y[2] ) / 2
     )
   )
+}
+
+biroot_assign <- function(df,sq,f){
+  ml <- f(df[14,c("x","y")])
+  mm <- f(df[15,c("x","y")])
+  bm <- f(df[16,c("x","y")])
+  tm <- f(df[3,c("x","y")])
+  mr <- f(df[8,c("x","y")])
+  c(ml, sq$value[2], tm, mm,
+    mm, tm, sq$value[3], mr,
+    bm, mm, mr, sq$value[4],
+    sq$value[1], ml, mm, bm)
 }
