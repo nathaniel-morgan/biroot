@@ -52,7 +52,8 @@
 
 #' @rdname biroot
 #' @export
-biroot <- function(f, xlim = c(-1,1), ylim = c(-1,1) ,max_depth = 10, min_depth = 2, ...) {
+biroot <- function(f, xlim = c(-1,1), ylim = c(-1,1) ,max_depth = 10,
+                   min_depth = 2, class = "continuous", ...) {
   
   sq <- expand.grid(x=xlim,y=ylim)[c(1,3,4,2),]
   sq$id <- 1
@@ -74,9 +75,18 @@ biroot <- function(f, xlim = c(-1,1), ylim = c(-1,1) ,max_depth = 10, min_depth 
     )
   }
   
-  split_one <- function(sq, f, depth) {
-    if ( all(sign(sq$value) == sign(sq$value[1])) & depth > min_depth ) return(sq)
-    rbind(sq, process_quadpoint(do.call(rbind, quad_point_c(sq)),depth = depth, sq = sq))
+  if (class == "continuous"){
+    split_one <- function(sq, f, depth) {
+      if ( all(sign(sq$value) == sign(sq$value[1])) & depth > min_depth ) return(sq)
+      rbind(sq, process_quadpoint(do.call(rbind, quad_point_c(sq)),depth = depth, sq = sq))
+    }
+  }
+  
+  else  {
+    split_one <- function(sq, f, depth) {
+      if ( all(sq$value == sq$value[1]) & depth > min_depth ) return(sq)
+      rbind(sq, process_quadpoint(do.call(rbind, quad_point_c(sq)),depth = depth, sq = sq))
+    }
   }
   
   output <- split_one(sq = sq, f = f_new, depth = 0)
