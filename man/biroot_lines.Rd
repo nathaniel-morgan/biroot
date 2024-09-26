@@ -11,6 +11,7 @@ biroot_lines(
   ylim = c(-1, 1),
   max_depth = 10,
   min_depth = 2,
+  class = "continuous",
   ...
 )
 }

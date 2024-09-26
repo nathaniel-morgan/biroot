@@ -39,10 +39,12 @@ biroot_lines <- function(f, xlim = c(-1,1), ylim = c(-1,1) ,max_depth = 10,
                            max_depth = max_depth, min_depth = min_depth,
                            class = class, ...),depth == max_depth)
     if (class == "continuous"){
-      na.omit(do.call(rbind,lapply(split.data.frame(final,0:(nrow(final)-1) %/% 4),iso)))
+      na.omit(do.call(rbind,lapply(split.data.frame(final,0:(nrow(final)-1) %/% 4),iso))) |> 
+        resort()
     }
     else{
-      na.omit(do.call(rbind,lapply(split.data.frame(final,0:(nrow(final)-1) %/% 4),iso_discrete)))
+      na.omit(do.call(rbind,lapply(split.data.frame(final,0:(nrow(final)-1) %/% 4),iso_discrete))) |> 
+        resort()
     }
 }
 
@@ -136,4 +138,30 @@ iso_discrete <- function(df){
     data.frame(x = c(x[1],x[2],midx,midx),y = c(midy,midy,y[1],y[2]),
                id = c(id,id,rep(paste0(id,"-2"),2))))
   else data.frame(x = values, y = df$value, id = "forgot case")
+}
+
+resort <- function(x){
+  x[,1:2] <- zapsmall(x[,1:2])
+  x$xy <- x$x+x$y
+  x$order <- NA
+  x$order[1:2] <- 1:2
+  x$line <- NA
+  chunk <- 1
+  for (i in 1:(nrow(x)/2-1)) {
+    j <- 1
+    while (any(x[2*i,1:2] != x[j,1:2])) {
+      j <- j+2
+      if(j > nrow(x)) {
+        print(paste0("failed at ",2*i))
+        chunk <- chunk + 1
+        break
+      }
+    }
+    if(j < nrow(x)){
+      x[c(j,j+1),]$order <- c(2*i+1,2*i+2)
+      x[c(j,j+1),]$line <- chunk
+      if(abs(x[2*i,"xy"] - x[2*i+2,"xy"]) > 0.1) chunk <- chunk + 1
+    }
+  }
+  x
 }
