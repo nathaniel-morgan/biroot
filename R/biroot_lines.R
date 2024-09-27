@@ -141,6 +141,7 @@ iso_discrete <- function(df){
 }
 
 resort <- function(x){
+  #x <- arrange(x,id,x,y)
   x[,1:2] <- zapsmall(x[,1:2])
   x$xy <- x$x+x$y
   x$order <- NA
@@ -150,7 +151,8 @@ resort <- function(x){
   for (i in 1:(nrow(x)/2-1)) {
     j <- 1
     while (any(x[2*i,1:2] != x[j,1:2])) {
-      j <- j+2
+      j <- j+1
+      if(2*i == j) j <- j+1
       if(j > nrow(x)) {
         print(paste0("failed at ",2*i))
         chunk <- chunk + 1
@@ -158,10 +160,21 @@ resort <- function(x){
       }
     }
     if(j < nrow(x)){
-      x[c(j,j+1),]$order <- c(2*i+1,2*i+2)
-      x[c(j,j+1),]$line <- chunk
+      if(x[j,"id"] == x[j+1,"id"]){
+        x[c(j,j+1),]$order <- c(2*i+1,2*i+2)
+        x[c(j,j+1),]$line <- chunk 
+      }
+      if(j>1){
+        if(x[j,"id"] == x[j-1,"id"]){
+          x[c(j,j-1),]$order <- c(2*i+1,2*i+2)
+          x[c(j,j-1),]$line <- chunk 
+        } 
+        if(x[j,"id"] != x[j-1,"id"] & x[j,"id"] != x[j+1,"id"]) print(paste0("oh no ",j))
+        x
+      }
       if(abs(x[2*i,"xy"] - x[2*i+2,"xy"]) > 0.1) chunk <- chunk + 1
     }
+    x
   }
   x
 }
