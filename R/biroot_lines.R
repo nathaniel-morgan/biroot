@@ -46,6 +46,8 @@ biroot_lines <- function(f, xlim = c(-1,1), ylim = c(-1,1) ,max_depth = 10,
     }
 }
 
+# The iso function go in this order, bottom left, top left, top right, bottom right
+
 iso <- function(df){
   value <- df$value
   x <- df$x
@@ -115,25 +117,25 @@ iso_discrete <- function(df){
   if(all(values == c(1,2,2,2))) return(
     data.frame(x = c(x[1],midx),y = c(midy,y[1]),id = id))
   if(all(values == c(1,1,2,3))) return(
-    data.frame(x = c(midx,midx,midx,x[3]),y = c(y[1],y[2],midy,midy),
-               id = c(id,id,rep(paste0(id,"-2"),2))))
+    data.frame(x = c(midx,midx,midx,midx,x[3]),y = c(y[1],midy,y[2],midy,midy),
+               id = c(id,id,id,rep(paste0(id,"-2"),2))))
   if(all(values == c(1,2,1,3))) return(
     data.frame(x = c(x[1],midx,midx,x[3]),y = c(midy,y[2],y[1],midy),
                id = c(id,id,rep(paste0(id,"-2"),2))))
   if(all(values == c(1,2,3,1))) return(
-    data.frame(x = c(x[1],x[3],midx,midx),y = c(midy,midy,midy,y[2]),
-               id = c(id,id,rep(paste0(id,"-2"),2))))
+    data.frame(x = c(x[1],midx,x[3],midx,midx),y = c(midy,midy,midy,midy,y[2]),
+               id = c(id,id,id,rep(paste0(id,"-2"),2))))
   if(all(values == c(1,2,2,3))) return(
-    data.frame(x = c(x[1],x[3],midx,midx),y = c(midy,midy,midy,y[1]),
-               id = c(id,id,rep(paste0(id,"-2"),2))))
+    data.frame(x = c(x[1],midx,x[3],midx,midx),y = c(midy,midy,midy,midy,y[1]),
+               id = c(id,id,id,rep(paste0(id,"-2"),2))))
   if(all(values == c(1,2,3,2))) return(
     data.frame(x = c(x[1],midx,midx,x[3]),y = c(midy,y[1],y[2],midy),
                id = c(id,id,rep(paste0(id,"-2"),2))))
   if(all(values == c(1,2,3,3))) return(
-    data.frame(x = c(x[1],midx,midx,midx),y = c(midy,midy,y[1],y[2]),
-               id = c(id,id,rep(paste0(id,"-2"),2))))
+    data.frame(x = c(x[1],midx,midx,midx,midx),y = c(midy,midy,y[1],midy,y[2]),
+               id = c(id,id,rep(paste0(id,"-2"),3))))
   if(all(values == c(1,2,3,4))) return(
-    data.frame(x = c(x[1],x[2],midx,midx),y = c(midy,midy,y[1],y[2]),
-               id = c(id,id,rep(paste0(id,"-2"),2))))
+    data.frame(x = c(x[1],midx,x[2],midx,midx,midx),y = c(midy,midy,midy,y[1],midy,y[2]),
+               id = c(id,id,id,rep(paste0(id,"-2"),3))))
   else data.frame(x = values, y = df$value, id = "forgot case")
 }
