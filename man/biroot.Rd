@@ -7,7 +7,15 @@
 \alias{package-biroot}
 \title{biroot: quadtree inspired method for approximating solution curves.}
 \usage{
-biroot(f, xlim = c(-1, 1), ylim = c(-1, 1), max_depth = 10, min_depth = 2, ...)
+biroot(
+  f,
+  xlim = c(-1, 1),
+  ylim = c(-1, 1),
+  max_depth = 10,
+  min_depth = 2,
+  class = "continuous",
+  ...
+)
 }
 \value{
 A dataframe with a row for each point with columns giving, location,
