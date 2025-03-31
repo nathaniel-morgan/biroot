@@ -56,8 +56,10 @@ biroot <- function(f, xlim = c(-1,1), ylim = c(-1,1) ,max_depth = 10,
                    min_depth = 2, class = "continuous", ...) {
   
   sq <- expand.grid(x=xlim,y=ylim)[c(1,3,4,2),]
-  sq$id <- 1
+  sq$id <- "0-1-1"
   sq$depth <- 0
+  sq$row <- 1
+  sq$col <- 1
   f_new <- function(x) f(x, ...)
   sq$value <- f_new(sq[,c("x","y")])
   sq$parent <- 0
@@ -65,13 +67,22 @@ biroot <- function(f, xlim = c(-1,1), ylim = c(-1,1) ,max_depth = 10,
   sq$position <- c("bl", "tl", "tr", "br")
   
   process_quadpoint <- function(df, depth, sq) {
-    cbind(
-      df, # data frame with columns x and y
-      "id" = rep(paste0(depth + 1, "-", runif(4)),each = 4),
-      "depth" = depth + 1, 
-      "value" = biroot_assign(df = df, sq = sq, f = f_new),
-      "parent" = sq$id,
-      "position" = rep(c("bl", "tl", "tr", "br"),4)
+    rows <- c(sq$row[1]*2-1, sq$row[1]*2-1, sq$row[1]*2, sq$row[1]*2)
+    cols <- c(sq$col[1]*2-1, sq$col[1]*2, sq$col[1]*2, sq$col[1]*2-1)
+    ids  <- paste0(depth[1] + 1, "-", rows, "-", cols)
+    positions <- c("bl", "tl", "tr", "br")
+    
+    data.frame(
+      x = df$x,
+      y = df$y,
+      id = rep(ids, each = 4),
+      depth = depth + 1,
+      row = rep(rows, each = 4),
+      col = rep(cols, each = 4),
+      value = biroot_assign(df = df, sq = sq, f = f_new),
+      parent = sq$id,
+      parent_position = df$parent_position,
+      position = rep(positions, 4)
     )
   }
   
