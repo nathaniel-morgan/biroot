@@ -21,6 +21,17 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// potrace_polygons
+List potrace_polygons(std::string infile);
+RcppExport SEXP _biroot_potrace_polygons(SEXP infileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type infile(infileSEXP);
+    rcpp_result_gen = Rcpp::wrap(potrace_polygons(infile));
+    return rcpp_result_gen;
+END_RCPP
+}
 // quad_point_c
 List quad_point_c(DataFrame df);
 RcppExport SEXP _biroot_quad_point_c(SEXP dfSEXP) {
@@ -35,6 +46,7 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_biroot_iso_c", (DL_FUNC) &_biroot_iso_c, 1},
+    {"_biroot_potrace_polygons", (DL_FUNC) &_biroot_potrace_polygons, 1},
     {"_biroot_quad_point_c", (DL_FUNC) &_biroot_quad_point_c, 1},
     {NULL, NULL, 0}
 };

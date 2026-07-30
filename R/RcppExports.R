@@ -5,6 +5,10 @@ iso_c <- function(df) {
     .Call(`_biroot_iso_c`, df)
 }
 
+potrace_polygons <- function(infile) {
+    .Call(`_biroot_potrace_polygons`, infile)
+}
+
 quad_point_c <- function(df) {
     .Call(`_biroot_quad_point_c`, df)
 }
