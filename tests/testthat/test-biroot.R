@@ -13,6 +13,29 @@ test_that("max_depth is validated", {
   expect_error(biroot(f, max_depth = c(2, 3)), "max_depth")
 })
 
+test_that("point-wise and data-frame f give identical results", {
+  f_pt <- function(u) u[1]^2 + u[2]^2 - 1
+  f_df <- function(v) with(v, x^2 + y^2 - 1)
+  b_pt <- biroot(f_pt, xlim = c(-2, 2), ylim = c(-2, 2), max_depth = 5)
+  b_df <- biroot(f_df, xlim = c(-2, 2), ylim = c(-2, 2), max_depth = 5)
+  expect_identical(b_pt, b_df)
+  expect_identical(biroot_paths(b_pt), biroot_paths(b_df))
+})
+
+test_that("point-wise discrete classifiers are accepted", {
+  f_pt <- function(u) if (u[1] >= 0) "right" else "left"
+  b <- biroot(f_pt, max_depth = 4, class = "discrete")
+  expect_setequal(unique(b$value), c("left", "right"))
+  d <- biroot_discrete(f_pt, max_depth = 3)
+  expect_setequal(unique(d$class), c("left", "right"))
+})
+
+test_that("an unusable f errors with the contract and the underlying message", {
+  expect_error(biroot(function(v) c(1, 2), max_depth = 3), "single value")
+  expect_error(biroot(function(v) stop("boom"), max_depth = 3), "boom")
+  expect_error(biroot(function(v) data.frame(a = 1), max_depth = 3), "single value")
+})
+
 test_that("a zero-free function stops refining after min_depth + 1", {
   f <- function(v) with(v, x^2 + y^2 + 1)
   expect_no_warning(

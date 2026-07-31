@@ -18,6 +18,8 @@ biroot_lines(
 \value{
 A dataframe with a row for each point with columns giving, location,
 how deep in the grid search they were, a unique id for pair of points.
+If no part of the solution set is found within the region, a zero-row
+data frame is returned.
 }
 \description{
 Return lines approximating the solution set of the function given

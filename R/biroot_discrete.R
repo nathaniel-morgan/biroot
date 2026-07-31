@@ -52,8 +52,9 @@ biroot_discrete <- function(f, xlim = c(-1,1), ylim = c(-1,1) ,max_depth = 10, m
   sq$id <- 0
   sq$depth <- 0
   f_new <- function(x) f(x, ...)
-  sq$class <- NA
-  sq$class <- f_new(sq[,c("x","y")])
+  ad <- adapt_f(f_new, sq[, c("x", "y")])
+  f_new <- ad$f
+  sq$class <- if (is.null(ad$value)) f_new(sq[, c("x", "y")]) else ad$value
   
   sq_count <- 0L
   process_quadpoint <- function(x, depth) {

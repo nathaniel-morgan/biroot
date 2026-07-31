@@ -28,7 +28,13 @@ Description of package
 \section{Arguments}{
  \code{biroot()} understands the following arguments:
 \itemize{
-\item f - function for discrete classification over region
+\item f - the function to search. Either a function of a single point,
+a numeric vector \code{c(x, y)}, returning one value (numeric for
+\code{class = "continuous"}, a label for \code{class = "discrete"}); or a
+vectorized function mapping a data frame with columns \code{x} and \code{y} to
+one value per row (detected automatically, evaluated in batches, and
+therefore faster — the natural form for \code{predict()}-based
+classifiers).
 \item xlim - boundaries of x to be searched
 \item ylim - boundaries of y to be searched
 \item max_depth - how many times should the grid be split in four
@@ -79,6 +85,7 @@ Useful links:
 
 Authors:
 \itemize{
+  \item Nathaniel Morgan \email{nathaniel.morgan1999@gmail.com} (\href{https://orcid.org/0009-0008-1397-8522}{ORCID})
   \item David Kahle \email{david@kahle.io} (\href{https://orcid.org/0000-0002-9999-1558}{ORCID})
   \item Michael Gallaugher \email{michael_gallaugher@baylor.edu} (\href{https://orcid.org/0000-0002-5487-8965}{ORCID})
 }
