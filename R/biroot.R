@@ -54,7 +54,10 @@
 #' @export
 biroot <- function(f, xlim = c(-1,1), ylim = c(-1,1) ,max_depth = 10,
                    min_depth = 2, class = "continuous", ...) {
-  
+
+  if (!is.numeric(max_depth) || length(max_depth) != 1L || is.na(max_depth) || max_depth < 1)
+    stop("`max_depth` must be a single number >= 1.", call. = FALSE)
+
   sq <- expand.grid(x=xlim,y=ylim)[c(1,3,4,2),]
   sq$id <- "0-1-1"
   sq$depth <- 0
@@ -88,7 +91,7 @@ biroot <- function(f, xlim = c(-1,1), ylim = c(-1,1) ,max_depth = 10,
   
   if (class == "continuous"){
     split_one <- function(sq, f, depth) {
-      if ( all(sign(sq$value) == sign(sq$value[1])) & depth > min_depth ) return(sq)
+      if ( all(sgn(sq$value) == sgn(sq$value[1])) & depth > min_depth ) return(sq)
       rbind(sq, process_quadpoint(do.call(rbind, quad_point_c(sq)),depth = depth, sq = sq))
     }
   }
@@ -101,10 +104,11 @@ biroot <- function(f, xlim = c(-1,1), ylim = c(-1,1) ,max_depth = 10,
   }
   
   output <- split_one(sq = sq, f = f_new, depth = 0)
-  
-  for (i in 1:(max_depth-1)) {
+
+  for (i in seq_len(max_depth - 1)) {
     temp <- subset(output, depth == i)
-    temp <- split.data.frame(temp, 0:(nrow(temp)-1) %/% 4)
+    if (nrow(temp) == 0L) break
+    temp <- split.data.frame(temp, (seq_len(nrow(temp)) - 1L) %/% 4)
     output <- rbind(
       subset(output, depth != i),
       do.call(
@@ -115,6 +119,12 @@ biroot <- function(f, xlim = c(-1,1), ylim = c(-1,1) ,max_depth = 10,
   }
   output
 }
+
+
+
+# zero counts as positive so that refinement and iso() classify corners
+# identically and every corner pattern matches one of iso()'s 16 cases
+sgn <- function(v) ifelse(v >= 0, 1, -1)
 
 
 

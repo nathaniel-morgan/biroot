@@ -12,6 +12,8 @@
 #'   
 #' @returns A dataframe with a row for each point with columns giving, location,
 #'  how deep in the grid search they were, a unique id for pair of points.
+#'  If no part of the solution set is found within the region, a zero-row
+#'  data frame is returned.
 #'
 #' @name biroot_lines
 #'
@@ -35,14 +37,16 @@
 #' @export
 biroot_lines <- function(f, xlim = c(-1,1), ylim = c(-1,1) ,max_depth = 10,
                          min_depth = 2, class = "continuous", ...) {
-    final <- subset(biroot(f = f, xlim = xlim, ylim = ylim, 
+    final <- subset(biroot(f = f, xlim = xlim, ylim = ylim,
                            max_depth = max_depth, min_depth = min_depth,
                            class = class, ...),depth == max_depth)
+    if (nrow(final) == 0L)
+      return(data.frame(x = numeric(0), y = numeric(0), id = character(0)))
     if (class == "continuous"){
-      na.omit(do.call(rbind,lapply(split.data.frame(final,0:(nrow(final)-1) %/% 4),iso)))
+      na.omit(do.call(rbind,lapply(split.data.frame(final,(seq_len(nrow(final)) - 1L) %/% 4),iso)))
     }
     else{
-      na.omit(do.call(rbind,lapply(split.data.frame(final,0:(nrow(final)-1) %/% 4),iso_discrete)))
+      na.omit(do.call(rbind,lapply(split.data.frame(final,(seq_len(nrow(final)) - 1L) %/% 4),iso_discrete)))
     }
 }
 
@@ -53,11 +57,11 @@ iso <- function(df){
   x <- df$x
   y <- df$y
   id <- df$id[1]
-  signs <- sign(df$value)
+  signs <- sgn(df$value)
   midx <- (x[1]+x[3])/2
   midy <- (y[1]+y[2])/2
-  if(all(signs == c(1,1,1,1))) return(data.frame(x = NA,y = NA,id = id))
-  if(all(signs == c(-1,-1,-1,-1))) return(data.frame(x = NA,y = NA,id = id))
+  if(all(signs == c(1,1,1,1))) return(data.frame(x = NA_real_,y = NA_real_,id = id))
+  if(all(signs == c(-1,-1,-1,-1))) return(data.frame(x = NA_real_,y = NA_real_,id = id))
   if(all(signs == c(-1,1,1,1))) return(
     data.frame(x = c(midx,x[1]),y = c(y[1],midy),id = id))
   if(all(signs == c(1,-1,1,1))) return(
@@ -90,6 +94,8 @@ iso <- function(df){
     data.frame(x = c(x[1],midx),y = c(midy,y[2]),id = id))
   if(all(signs == c(1,-1,-1,-1))) return(
     data.frame(x = c(x[1],midx),y = c(midy,y[1]),id = id))
+  stop("internal error: unhandled sign pattern in iso(): ",
+       paste(signs, collapse = ","), call. = FALSE)
 }
 
 iso_discrete <- function(df){
@@ -99,7 +105,7 @@ iso_discrete <- function(df){
   id <- df$id[1]
   midx <- (x[1]+x[3])/2
   midy <- (y[1]+y[2])/2
-  if(all(values == c(1,1,1,1))) return(data.frame(x = NA,y = NA,id = id))
+  if(all(values == c(1,1,1,1))) return(data.frame(x = NA_real_,y = NA_real_,id = id))
   if(all(values == c(1,1,1,2))) return(
     data.frame(x = c(midx,x[3]),y = c(y[1],midy),id = id))
   if(all(values == c(1,1,2,1))) return(
@@ -135,7 +141,8 @@ iso_discrete <- function(df){
     data.frame(x = c(x[1],midx,midx,midx,midx),y = c(midy,midy,y[1],midy,y[2]),
                id = c(id,id,rep(paste0(id,"-2"),3))))
   if(all(values == c(1,2,3,4))) return(
-    data.frame(x = c(x[1],midx,x[2],midx,midx,midx),y = c(midy,midy,midy,y[1],midy,y[2]),
+    data.frame(x = c(x[1],midx,x[3],midx,midx,midx),y = c(midy,midy,midy,y[1],midy,y[2]),
                id = c(id,id,id,rep(paste0(id,"-2"),3))))
-  else data.frame(x = values, y = df$value, id = "forgot case")
+  stop("internal error: unhandled corner pattern in iso_discrete(): ",
+       paste(values, collapse = ","), call. = FALSE)
 }

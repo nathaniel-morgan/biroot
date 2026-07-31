@@ -44,7 +44,10 @@
 #' @usage NULL
 #' @export
 biroot_discrete <- function(f, xlim = c(-1,1), ylim = c(-1,1) ,max_depth = 10, min_depth = 2, ...) {
-  
+
+  if (!is.numeric(max_depth) || length(max_depth) != 1L || is.na(max_depth) || max_depth < 1)
+    stop("`max_depth` must be a single number >= 1.", call. = FALSE)
+
   sq <- expand.grid(x=xlim,y=ylim)[c(1,3,4,2),]
   sq$id <- 0
   sq$depth <- 0
@@ -52,8 +55,13 @@ biroot_discrete <- function(f, xlim = c(-1,1), ylim = c(-1,1) ,max_depth = 10, m
   sq$class <- NA
   sq$class <- f_new(sq[,c("x","y")])
   
+  sq_count <- 0L
   process_quadpoint <- function(x, depth) {
-    cbind(x, id = paste0(depth + 1, "-", runif(1)),
+    sq_count <<- sq_count + 1L
+    # quad_point_c() tags sub-squares with parent_position for biroot();
+    # biroot_discrete()'s schema (and its initial sq) doesn't carry it
+    x$parent_position <- NULL
+    cbind(x, id = paste0(depth + 1, "-", sq_count),
           depth = depth + 1, class = f_new(x[,c("x","y")]))
   }
   
@@ -68,9 +76,10 @@ biroot_discrete <- function(f, xlim = c(-1,1), ylim = c(-1,1) ,max_depth = 10, m
   
   output <- split_one(sq = sq, f = f_new, depth = 0, max_depth = max_depth, min_depth = min_depth)
   
-  for (i in 1:(max_depth-1)) {
+  for (i in seq_len(max_depth - 1)) {
     temp <- subset(output, output$depth == i)
-    temp <- split.data.frame(temp, 0:(nrow(temp)-1) %/% 4)
+    if (nrow(temp) == 0L) break
+    temp <- split.data.frame(temp, (seq_len(nrow(temp)) - 1L) %/% 4)
     output <- rbind(
       subset(output, output$depth != i),
       do.call(

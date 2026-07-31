@@ -7,6 +7,6 @@
 # * https://testthat.r-lib.org/reference/test_package.html#special-files
 
 library(testthat)
-library(ggdensity)
+library(biroot)
 
-test_check("ggdensity")
+test_check("biroot")

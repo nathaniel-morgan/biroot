@@ -7,7 +7,11 @@ DataFrame iso_c(DataFrame df) {
   NumericVector x = df["x"];
   NumericVector y = df["y"];
   String id = as<CharacterVector>(df["id"])[0];
-  NumericVector signs = as<NumericVector>(sign(value));
+  // zero counts as positive, matching sgn() on the R side, so every corner
+  // pattern falls into one of the 16 cases below
+  int n = value.size();
+  NumericVector signs(n);
+  for (int i = 0; i < n; i++) signs[i] = (value[i] >= 0) ? 1.0 : -1.0;
   double midx = (x[0] + x[2]) / 2;
   double midy = (y[0] + y[1]) / 2;
   
@@ -60,5 +64,6 @@ DataFrame iso_c(DataFrame df) {
     return DataFrame::create(_["x"] = NumericVector::create(x[0], midx), _["y"] = NumericVector::create(midy, y[0]), _["id"] = id);
   }
   
-  return DataFrame::create(); // Default return if no conditions are met
+  stop("internal error: unhandled sign pattern in iso_c()");
+  return DataFrame::create(); // not reached
 }
