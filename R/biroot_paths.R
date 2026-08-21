@@ -26,6 +26,17 @@
 #'   input the class is taken from the object itself when not supplied; note
 #'   a discrete classification encoded with numeric codes cannot be detected
 #'   automatically and must be declared with `class = "discrete"`.
+#' @param refine Number of bisection rounds used to sharpen discrete boundary
+#'   crossings. Unrefined discrete crossings sit at cell-edge midpoints,
+#'   which staircase at the cell size; each round of `refine` halves that
+#'   error with one additional (batched) evaluation of the classifier, so
+#'   the default `8` gives visually smooth boundaries at moderate
+#'   `max_depth`. Refinement re-evaluates the classifier, which [biroot()]
+#'   stores on its result, so both function and data-frame input support it;
+#'   a data frame whose attributes were dropped falls back to midpoints with
+#'   a warning (or an error if `refine` was supplied explicitly). Set
+#'   `refine = 0` for raw midpoints. No effect for continuous input, whose
+#'   crossings are already interpolated.
 #' @param ... Additional arguments passed on to `object` when it is a
 #'   function.
 #'
@@ -64,7 +75,7 @@
 #' @export
 biroot_paths <- function(object, xlim = c(-1, 1), ylim = c(-1, 1),
                          max_depth = 10, min_depth = 2,
-                         class = "continuous", ...) {
+                         class = "continuous", refine = 8, ...) {
 
   if (is.data.frame(object) &&
       (!missing(xlim) || !missing(ylim) || !missing(max_depth) || !missing(min_depth)))
@@ -72,7 +83,8 @@ biroot_paths <- function(object, xlim = c(-1, 1), ylim = c(-1, 1),
          "and `min_depth` come from it and must not be supplied.", call. = FALSE)
 
   prep <- biroot_prep(object, xlim, ylim, max_depth, min_depth,
-                      class = if (missing(class)) NULL else class, ...)
+                      class = if (missing(class)) NULL else class,
+                      refine = refine, refine_explicit = !missing(refine), ...)
   segs <- cell_segments(prep)
   st <- stitch_chains(segs, prep$xlim, prep$ylim)
   chains <- st$chains

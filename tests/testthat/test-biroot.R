@@ -18,7 +18,12 @@ test_that("point-wise and data-frame f give identical results", {
   f_df <- function(v) with(v, x^2 + y^2 - 1)
   b_pt <- biroot(f_pt, xlim = c(-2, 2), ylim = c(-2, 2), max_depth = 5)
   b_df <- biroot(f_df, xlim = c(-2, 2), ylim = c(-2, 2), max_depth = 5)
-  expect_identical(b_pt, b_df)
+  # identical up to the stored classifier, which is necessarily a different
+  # closure (the point-wise wrapper vs the pass-through)
+  strip_f <- function(b) {
+    a <- attr(b, "biroot"); a$f <- NULL; attr(b, "biroot") <- a; b
+  }
+  expect_identical(strip_f(b_pt), strip_f(b_df))
   expect_identical(biroot_paths(b_pt), biroot_paths(b_df))
 })
 

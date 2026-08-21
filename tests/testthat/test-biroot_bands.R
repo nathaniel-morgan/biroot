@@ -87,7 +87,7 @@ test_that("a fully interior contour still closes against the window ring", {
 test_that("discrete quadrant regions have closed-form midpoint areas", {
   f <- function(v) with(v, paste0(x >= 0, "-", y >= 0))
   h <- 2 / 2^4
-  b <- biroot_bands(f, max_depth = 4, class = "discrete")
+  b <- biroot_bands(f, max_depth = 4, class = "discrete", refine = 0)
   expect_equal(length(unique(b$id)), 4)
   areas <- vapply(unique(b$id), function(i) face_area(b, i), numeric(1))
   vals <- vapply(unique(b$id), function(i) b$value[b$id == i][1], character(1))
@@ -100,13 +100,65 @@ test_that("discrete quadrant regions have closed-form midpoint areas", {
 test_that("three-class junction regions assemble with exact areas", {
   f <- function(v) ifelse(v$y >= 0, "top", ifelse(v$x >= 0, "br", "bl"))
   h <- 2 / 2^4
-  b <- biroot_bands(f, max_depth = 4, class = "discrete")
+  b <- biroot_bands(f, max_depth = 4, class = "discrete", refine = 0)
   expect_equal(length(unique(b$id)), 3)
   areas <- vapply(unique(b$id), function(i) face_area(b, i), numeric(1))
   vals <- vapply(unique(b$id), function(i) b$value[b$id == i][1], character(1))
   expect_equal(areas[vals == "top"], 2 * (1 + h / 2))
   expect_equal(areas[vals == "bl"], (1 - h / 2)^2)
   expect_equal(areas[vals == "br"], (1 + h / 2) * (1 - h / 2))
+})
+
+test_that("refine sharpens discrete crossings by exact bisection", {
+  f <- function(v) with(v, paste0(x >= 0, "-", y >= 0))
+  h <- 2 / 2^4
+  k <- 6
+  b <- biroot_bands(f, max_depth = 4, class = "discrete", refine = k)
+  areas <- vapply(unique(b$id), function(i) face_area(b, i), numeric(1))
+  vals <- vapply(unique(b$id), function(i) b$value[b$id == i][1], character(1))
+  # bisection walks the bracket [-h, 0] down to [-h/2^k, 0], so crossings
+  # land exactly at -h/2^(k+1) on both axes -- except inside the four-class
+  # junction cell, whose "+" stays anchored at the cell center, contributing
+  # an exactly computable quadrilateral to each face
+  off <- h / 2^(k + 1)
+  expect_equal(areas[vals == "TRUE-TRUE"], (1 + off)^2 - off^2 + off * h / 2)
+  expect_equal(areas[vals == "FALSE-FALSE"],
+               (1 - off)^2 - (h - off)^2 + (h^2 - h * off) / 2)
+  expect_equal(sum(ring_areas(b)), 4, tolerance = 1e-12)
+  # paths built with the same refinement stitch cleanly through the junction
+  p <- biroot_paths(f, max_depth = 4, class = "discrete", refine = k)
+  expect_false(any(p$crack))
+  expect_true(any(p$y == -off))                       # refined edge crossings
+  expect_true(any(p$x == -h / 2 & p$y == -h / 2))     # junction cell center
+})
+
+test_that("refine is a no-op for continuous input", {
+  f <- function(v) with(v, x^2 + y^2 - 1)
+  expect_identical(
+    biroot_bands(f, xlim = c(-2, 2), ylim = c(-2, 2), max_depth = 5, refine = 8),
+    biroot_bands(f, xlim = c(-2, 2), ylim = c(-2, 2), max_depth = 5, refine = 0)
+  )
+})
+
+test_that("the reuse workflow refines by default via the stored classifier", {
+  f <- function(v) with(v, paste0(x >= 0, "-", y >= 0))
+  b <- biroot(f, max_depth = 4, class = "discrete")
+  expect_identical(biroot_bands(b),
+                   biroot_bands(f, max_depth = 4, class = "discrete"))
+  # default refinement really moved crossings off the midpoints
+  h <- 2 / 2^4
+  p <- biroot_paths(b)
+  expect_true(any(p$y == -h / 2^9))
+})
+
+test_that("attribute-stripped data frames fall back with warning or error", {
+  f <- function(v) with(v, paste0(x >= 0, "-", y >= 0))
+  b <- biroot(f, max_depth = 4, class = "discrete")
+  b2 <- b
+  attr(b2, "biroot") <- NULL
+  expect_error(biroot_bands(b2, refine = 8), "carries none")
+  expect_warning(out <- biroot_bands(b2), "midpoints")
+  expect_identical(out, biroot_bands(b, refine = 0))
 })
 
 test_that("class is recovered from the biroot() attribute", {

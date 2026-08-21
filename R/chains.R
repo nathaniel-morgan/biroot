@@ -13,9 +13,58 @@ EDGE_I <- c(1L, 2L, 3L, 4L)
 EDGE_J <- c(2L, 3L, 4L, 1L)
 
 
+# bisection refinement of discrete boundary crossings: for every straddling
+# leaf-cell edge, binary-search the label change with `k` batched calls to
+# the classifier, localizing the crossing to edge-length/2^(k+1) instead of
+# the midpoint's edge-length/2. Computed once per canonical edge so the two
+# cells sharing it reuse the bitwise-identical point. An edge whose bracket
+# midpoint classifies to a third label is frozen where it stands.
+refine_crossings <- function(X, Y, L, f, k) {
+  mixed <- which(L[, 1] != L[, 2] | L[, 1] != L[, 3] | L[, 1] != L[, 4])
+  x0 <- y0 <- x1 <- y1 <- numeric(0)
+  l0 <- l1 <- character(0)
+  for (e in 1:4) {
+    i <- EDGE_I[e]; j <- EDGE_J[e]
+    r <- mixed[L[mixed, i] != L[mixed, j]]
+    x0 <- c(x0, X[r, i]); y0 <- c(y0, Y[r, i]); l0 <- c(l0, L[r, i])
+    x1 <- c(x1, X[r, j]); y1 <- c(y1, Y[r, j]); l1 <- c(l1, L[r, j])
+  }
+  swap <- x1 < x0 | (x1 == x0 & y1 < y0)
+  tmp <- x0[swap]; x0[swap] <- x1[swap]; x1[swap] <- tmp
+  tmp <- y0[swap]; y0[swap] <- y1[swap]; y1[swap] <- tmp
+  tmpl <- l0[swap]; l0[swap] <- l1[swap]; l1[swap] <- tmpl
+
+  key <- paste(pt_key(x0, y0), pt_key(x1, y1))
+  first <- !duplicated(key)
+  key <- key[first]
+  x0 <- x0[first]; y0 <- y0[first]; l0 <- l0[first]
+  x1 <- x1[first]; y1 <- y1[first]; l1 <- l1[first]
+
+  active <- rep(TRUE, length(key))
+  for (round in seq_len(k)) {
+    if (!any(active)) break
+    mx <- (x0[active] + x1[active]) / 2
+    my <- (y0[active] + y1[active]) / 2
+    lm <- as.character(f(data.frame(x = mx, y = my)))
+    eq0 <- lm == l0[active]
+    eq1 <- lm == l1[active]
+    idx <- which(active)
+    x0[idx[eq0]] <- mx[eq0]; y0[idx[eq0]] <- my[eq0]
+    x1[idx[eq1]] <- mx[eq1]; y1[idx[eq1]] <- my[eq1]
+    active[idx[!eq0 & !eq1]] <- FALSE
+  }
+
+  cx <- (x0 + x1) / 2; cy <- (y0 + y1) / 2
+  env <- new.env(parent = emptyenv(), size = length(key))
+  for (i in seq_along(key)) assign(key[i], c(cx[i], cy[i]), envir = env)
+  env
+}
+
+
 # resolve a function-or-data-frame `object` into leaf-cell matrices plus
 # window and label metadata; `class` is NULL when the caller didn't supply it
-biroot_prep <- function(object, xlim, ylim, max_depth, min_depth, class = NULL, ...) {
+biroot_prep <- function(object, xlim, ylim, max_depth, min_depth, class = NULL,
+                        refine = 0, refine_explicit = FALSE, ...) {
 
   if (is.function(object)) {
     if (is.null(class)) class <- "continuous"
@@ -63,7 +112,27 @@ biroot_prep <- function(object, xlim, ylim, max_depth, min_depth, class = NULL, 
     V <- NULL
   }
 
-  list(class = class, xlim = xlim, ylim = ylim, X = X, Y = Y, L = L, V = V)
+  # refinement has no effect on continuous input (crossings are already
+  # interpolated); for discrete it re-evaluates the classifier, which rides
+  # along in the "biroot" attribute for function and data-frame input alike
+  crossings <- NULL
+  if (refine > 0 && class == "discrete") {
+    fstored <- attr(df, "biroot")$f
+    if (is.null(fstored)) {
+      if (refine_explicit)
+        stop("`refine` needs the classifier, but `object` carries none ",
+             "(attributes dropped?); pass the function itself or a data frame ",
+             "freshly returned by biroot().", call. = FALSE)
+      warning("`object` carries no classifier (attributes dropped?), so boundary ",
+              "crossings stay at cell-edge midpoints; recompute with biroot() or ",
+              "pass the function to enable refinement.", call. = FALSE)
+    } else {
+      crossings <- refine_crossings(X, Y, L, fstored, refine)
+    }
+  }
+
+  list(class = class, xlim = xlim, ylim = ylim, X = X, Y = Y, L = L, V = V,
+       crossings = crossings)
 }
 
 
@@ -132,8 +201,19 @@ cell_segments <- function(prep) {
         edge_crossing(x[EDGE_I[e]], y[EDGE_I[e]], v[EDGE_I[e]],
                       x[EDGE_J[e]], y[EDGE_J[e]], v[EDGE_J[e]]))
     } else {
-      cr <- lapply(es, function(e)
-        c((x[EDGE_I[e]] + x[EDGE_J[e]]) / 2, (y[EDGE_I[e]] + y[EDGE_J[e]]) / 2))
+      cr <- lapply(es, function(e) {
+        xi <- x[EDGE_I[e]]; yi <- y[EDGE_I[e]]
+        xj <- x[EDGE_J[e]]; yj <- y[EDGE_J[e]]
+        if (!is.null(prep$crossings)) {
+          k2 <- if (xj < xi || (xj == xi && yj < yi))
+            paste(pt_key(xj, yj), pt_key(xi, yi))
+          else
+            paste(pt_key(xi, yi), pt_key(xj, yj))
+          hit <- get0(k2, envir = prep$crossings)
+          if (!is.null(hit)) return(hit)
+        }
+        c((xi + xj) / 2, (yi + yj) / 2)
+      })
     }
     names(cr) <- as.character(es)
     cross_of <- function(e) cr[[as.character(e)]]

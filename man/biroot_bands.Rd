@@ -11,6 +11,7 @@ biroot_bands(
   max_depth = 10,
   min_depth = 2,
   class = "continuous",
+  refine = 8,
   ...
 )
 }
@@ -31,6 +32,18 @@ supplied when \code{object} is a data frame.}
 input the class is taken from the object itself when not supplied; note
 a discrete classification encoded with numeric codes cannot be detected
 automatically and must be declared with \code{class = "discrete"}.}
+
+\item{refine}{Number of bisection rounds used to sharpen discrete boundary
+crossings. Unrefined discrete crossings sit at cell-edge midpoints,
+which staircase at the cell size; each round of \code{refine} halves that
+error with one additional (batched) evaluation of the classifier, so
+the default \code{8} gives visually smooth boundaries at moderate
+\code{max_depth}. Refinement re-evaluates the classifier, which \code{\link[=biroot]{biroot()}}
+stores on its result, so both function and data-frame input support it;
+a data frame whose attributes were dropped falls back to midpoints with
+a warning (or an error if \code{refine} was supplied explicitly). Set
+\code{refine = 0} for raw midpoints. No effect for continuous input, whose
+crossings are already interpolated.}
 
 \item{...}{Additional arguments passed on to \code{object} when it is a
 function.}

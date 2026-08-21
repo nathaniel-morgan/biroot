@@ -61,7 +61,7 @@
 #' @export
 biroot_bands <- function(object, xlim = c(-1, 1), ylim = c(-1, 1),
                          max_depth = 10, min_depth = 2,
-                         class = "continuous", ...) {
+                         class = "continuous", refine = 8, ...) {
 
   if (is.data.frame(object) &&
       (!missing(xlim) || !missing(ylim) || !missing(max_depth) || !missing(min_depth)))
@@ -69,7 +69,8 @@ biroot_bands <- function(object, xlim = c(-1, 1), ylim = c(-1, 1),
          "and `min_depth` come from it and must not be supplied.", call. = FALSE)
 
   prep <- biroot_prep(object, xlim, ylim, max_depth, min_depth,
-                      class = if (missing(class)) NULL else class, ...)
+                      class = if (missing(class)) NULL else class,
+                      refine = refine, refine_explicit = !missing(refine), ...)
   segs <- cell_segments(prep)
   st <- stitch_chains(segs, prep$xlim, prep$ylim)
 

@@ -125,9 +125,12 @@ biroot <- function(f, xlim = c(-1,1), ylim = c(-1,1) ,max_depth = 10,
       )
     )
   }
+  # f_new (post-adaptation, always data-frame-vectorized) rides along so
+  # downstream tools like biroot_paths()/biroot_bands() can re-evaluate the
+  # function, e.g. for crossing refinement, without it being passed again
   attr(output, "biroot") <- list(
     class = class, xlim = xlim, ylim = ylim,
-    max_depth = max_depth, min_depth = min_depth
+    max_depth = max_depth, min_depth = min_depth, f = f_new
   )
   output
 }
